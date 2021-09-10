@@ -1,1 +1,4 @@
-with open('../')
+from dataset import *
+
+if __name__ == '__main__':
+    pass

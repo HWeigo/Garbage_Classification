@@ -36,6 +36,7 @@ def get_labels(json_path: str):
 
     with open(json_path) as file:
         dict = json.load(file)
+        dict = {int(k):v for k, v in dict.items()}
         return dict
 
 
@@ -100,11 +101,12 @@ if __name__ == '__main__':
     json_path = "labels.json"
 
     # Get labels
-    # labels_dict = get_labels(json_path)
+    labels_dict = get_labels(json_path)
+
 
     # Rename image
     # rename_images(dataset_path)
 
     # Generate csv file
-    dataset_size = csv_generator("label.csv", dataset_path)
-    print(dataset_size)
+    # dataset_size = csv_generator("dataset.csv", dataset_path)
+    # print("Total samples in the dataset: {}".format(dataset_size))
