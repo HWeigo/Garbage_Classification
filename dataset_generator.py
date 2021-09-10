@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 import pandas as pd
@@ -25,15 +26,14 @@ def rename_directory():
             print("[ERROR ]OS error: {0}. Fail to rename directory.".format(err))
 
 
-# --- END ---
-
-# --- Rename image name by {label}_{item}.jpg ---
 def get_labels(json_path: str):
     """
     Read .json file
+
     :param json_path: path to json file
     :return: data: label dictionary
     """
+
     with open(json_path) as file:
         dict = json.load(file)
         return dict
@@ -41,9 +41,11 @@ def get_labels(json_path: str):
 
 def rename_images(dataset_path: str):
     """
-    Rename image's name
+    Rename image's name by {label}_{item}.jpg
+
     :param dataset_path: path to dataset
     """
+
     labels = os.listdir(dataset_path)
     print(labels)
 
@@ -62,12 +64,47 @@ def rename_images(dataset_path: str):
                 print("[ERROR] fail to rename image for {} image in class {}".format(j, int(labels[i])))
 
 
+def csv_generator(csv_name, dataset_path):
+    """
+    Generate csv file for pytorch dataloader
+
+    :param csv_name: name of csv file
+    :param dataset_path: path to dataset
+    :return: length of the dataset
+    """
+
+    subdir_name = os.listdir(dataset_path)
+    sum_img_paths = []
+    sum_labels = []
+    for i in subdir_name:
+        subdir_path = os.path.join(dataset_path, i)
+        print(subdir_path)
+        img_names = os.listdir(subdir_path)
+        img_paths = [subdir_path + '/' + n for n in img_names]
+        labels = [int(i)] * len(img_names)
+        assert len(img_paths) == len(labels)
+        sum_img_paths += img_paths
+        sum_labels += labels
+
+    rows = zip(sum_img_paths, sum_labels)
+    with open(csv_name, "w") as f:
+        writer = csv.writer(f)
+        for row in rows:
+            writer.writerow(row)
+
+    return len(sum_labels)
+
+
 if __name__ == '__main__':
     dataset_path = "./data"
     json_path = "labels.json"
 
-    # get labels
+    # Get labels
     # labels_dict = get_labels(json_path)
 
-    # rename image
+    # Rename image
     # rename_images(dataset_path)
+
+    # Generate csv file
+    dataset_size = csv_generator("label.csv", dataset_path)
+    print(dataset_size)
