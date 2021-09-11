@@ -1,6 +1,9 @@
 import csv
 import json
 import os
+import random
+from sklearn.model_selection import train_test_split
+
 import pandas as pd
 
 
@@ -36,7 +39,7 @@ def get_labels(json_path: str):
 
     with open(json_path) as file:
         dict = json.load(file)
-        dict = {int(k):v for k, v in dict.items()}
+        dict = {int(k): v for k, v in dict.items()}
         return dict
 
 
@@ -96,13 +99,41 @@ def csv_generator(csv_name, dataset_path):
     return len(sum_labels)
 
 
+def split_dataset(dataset_path, train_path, valid_path, test_path, percent):
+    """
+    Split the original dataset into training, validation and test dataset
+
+    :param dataset_path: path to original dataset csv file
+    :param train_path: path to training dataset csv file
+    :param valid_path: path to validation dataset csv file
+    :param test_path: path to test dataset csv file
+    :return: None
+    """
+
+    assert len(percent) == 3
+    train_percent, valid_percent, test_percent = percent
+
+    df = pd.read_csv(dataset_path)
+    trainval, test = train_test_split(df, test_size=test_percent, random_state=7)
+    train, valid = train_test_split(trainval, test_size=valid_percent, random_state=12)
+
+    print("train: {}, valid: {}, test: {}".format(train.shape[0], valid.shape[0], test.shape[0]))
+
+    train = train.sort_index(axis=0)
+    valid = valid.sort_index(axis=0)
+    test = test.sort_index(axis=0)
+
+    train.to_csv("train.csv", header=False, index=False)
+    valid.to_csv("valid.csv", header=False, index=False)
+    test.to_csv("test.csv", header=False, index=False)
+
+
 if __name__ == '__main__':
     dataset_path = "./data"
     json_path = "labels.json"
 
     # Get labels
-    labels_dict = get_labels(json_path)
-
+    # labels_dict = get_labels(json_path)
 
     # Rename image
     # rename_images(dataset_path)
@@ -110,3 +141,6 @@ if __name__ == '__main__':
     # Generate csv file
     # dataset_size = csv_generator("dataset.csv", dataset_path)
     # print("Total samples in the dataset: {}".format(dataset_size))
+
+    # Split dataset
+    split_dataset("dataset.csv", "train.csv", "valid.csv", "test.csv", [0.75, 0.2, 0.05])
