@@ -9,7 +9,7 @@ from dataset_generator import get_labels
 
 if __name__ == '__main__':
     BATCH_SIZE = 64
-    EPOCHS = 100
+    EPOCHS = 60
 
     label_path = "./labels.json"
     label_dirt = get_labels(label_path)
@@ -35,8 +35,8 @@ if __name__ == '__main__':
 
     model = torchvision.models.resnet50(pretrained=True)
     fc_inputs = model.fc.in_features
-    model.fc = nn.Linear(fc_inputs, 256)  # fc_inputs: 2048 Linear(2048, 256)
-    model.add_module('fc2', nn.Linear(256, num_classes))  # Linear(256, 8)
+    model.fc = nn.Sequential(nn.Linear(fc_inputs, 256),
+                             nn.Linear(256, num_classes))
     model = model.cuda()
     print(model)
 
@@ -88,7 +88,14 @@ if __name__ == '__main__':
 
             writer.add_scalar("eval/accuracy", accuracy / valid_dataset_size, epoch)
             writer.add_scalar("eval/loss", total_loss, epoch)
-            print("[TEST] epoch:{}, loss: {}, accuracy: {}".format(epoch, total_loss.item(), accuracy))
+            print("[TEST] epoch:{}, loss: {}, accuracy: {}".format(epoch,
+                                                                   total_loss.item(),
+                                                                   accuracy / valid_dataset_size))
             print("-------------------------------------------------------")
+        
+        # Save model every 10 epoch
+        if epoch % 10 == 0:
+            torch.save(model.state_dict(), "models/resnet_dict_{}.pt".format(epoch))
+            print("[CHECKPOINT] epoch:{}".format(epoch))
 
     writer.close()
