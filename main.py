@@ -67,9 +67,9 @@ if __name__ == '__main__':
 
             if step % 10 == 0:
                 print("[TRAIN] epoch: [{}: {}/{}], loss: {}".format(epoch,
-                                                            step,
-                                                            num_batch,
-                                                            loss.item()))
+                                                                    step,
+                                                                    num_batch,
+                                                                    loss.item()))
 
         model.eval()
         with torch.no_grad():
@@ -92,10 +92,18 @@ if __name__ == '__main__':
                                                                    total_loss.item(),
                                                                    accuracy / valid_dataset_size))
             print("-------------------------------------------------------")
-        
-        # Save model every 10 epoch
-        if epoch % 10 == 0:
-            torch.save(model.state_dict(), "models/resnet_dict_{}.pt".format(epoch))
-            print("[CHECKPOINT] epoch:{}".format(epoch))
+
+            # Save model every 10 epoch
+            if epoch % 10 == 0:
+                # torch.save(model.state_dict(), "models/resnet_dict_{}.pt".format(epoch))
+                # Checkpoint
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': total_loss,
+                    'accuracy': accuracy
+                }, "models/resnet_dict_{}.pt".format(epoch))
+                print("[CHECKPOINT] epoch:{}".format(epoch))
 
     writer.close()
